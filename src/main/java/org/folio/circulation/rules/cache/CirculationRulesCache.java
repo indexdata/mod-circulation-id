@@ -160,15 +160,29 @@ public final class CirculationRulesCache {
         new ExecutableRules(rulesMap.get(tenantId).rulesAsText, drools)));
   }
 
+  // Used by check-out and others
   public CompletableFuture<Result<Drools>> getDrools(String tenantId,
     CollectionResourceClient circulationRulesClient) {
+
+    return getDrools(tenantId, circulationRulesClient, true);
+  }
+
+  // Used by the timer only, with onlyRefreshWhenNotInitialized=false
+  public CompletableFuture<Result<Drools>> getDrools(String tenantId,
+    CollectionResourceClient circulationRulesClient, boolean onlyRefreshWhenNotInitialized) {
 
     log.info("Getting Drools for tenant {}", tenantId);
 
     final CompletableFuture<Result<Drools>> cfDrools = new CompletableFuture<>();
     Rules rules = rulesMap.get(tenantId);
 
-    if (isCurrent(tenantId, rules)) {
+    if (onlyRefreshWhenNotInitialized && rules != null) {
+      log.info("Rules for tenant {} are not current but refresh is not required, returning " +
+        "immediately: {}", tenantId, rules.rulesAsText);
+      cfDrools.complete(succeeded(rules.drools));
+      return cfDrools;
+    }
+    else if (isCurrent(tenantId, rules)) {
       log.info("Rules for tenant {} are current, returning immediately: {}", tenantId,
         rules.rulesAsText);
 
