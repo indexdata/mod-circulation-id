@@ -33,6 +33,7 @@ import static org.folio.circulation.support.json.JsonPropertyFetcher.getProperty
 import static org.folio.circulation.support.json.JsonPropertyWriter.write;
 import static org.folio.circulation.support.utils.DateTimeUtil.atEndOfDay;
 
+import java.lang.invoke.MethodHandles;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
@@ -42,6 +43,8 @@ import java.util.Map;
 import java.util.Objects;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.folio.circulation.domain.configuration.TlrSettingsConfiguration;
 import org.folio.circulation.domain.policy.RequestPolicy;
 
@@ -55,6 +58,9 @@ import lombok.With;
 @Getter
 @ToString(onlyExplicitlyIncluded = true)
 public class Request implements ItemRelatedRecord, UserRelatedRecord {
+  private static final Logger log = LogManager.getLogger(
+    MethodHandles.lookup().lookupClass());
+
   @With
   private final TlrSettingsConfiguration tlrSettingsConfiguration;
 
@@ -168,6 +174,7 @@ public class Request implements ItemRelatedRecord, UserRelatedRecord {
   }
 
   public boolean isAwaitingPickup() {
+    log.info("isAwaitingPickup:: getStatus() == OPEN_AWAITING_PICKUP : {}",getStatus() == OPEN_AWAITING_PICKUP);
     return getStatus() == OPEN_AWAITING_PICKUP;
   }
 
@@ -387,10 +394,12 @@ public class Request implements ItemRelatedRecord, UserRelatedRecord {
   }
 
   public boolean hasTopPriority() {
+    log.info("hasTopPriority:: Integer.valueOf(1).equals(getPosition()) : {}",Integer.valueOf(1).equals(getPosition()));
     return Integer.valueOf(1).equals(getPosition());
   }
 
   public boolean hasChangedStatus() {
+    log.info("hasChangedStatus:: changedStatus : {}",changedStatus);
     return changedStatus;
   }
 

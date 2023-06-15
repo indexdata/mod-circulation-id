@@ -87,11 +87,12 @@ public class UserRepository {
 
   public CompletableFuture<Result<User>> getUserWithPatronGroup(String userId) {
     log.debug("getUserWithPatronGroup:: parameters userId: {}", userId);
+    log.info("getUserWithPatronGroup:: parameters userId: {}", userId);
     if(isNull(userId)) {
       log.info("getUserWithPatronGroup:: userId is null");
       return ofAsync(() -> null);
     }
-
+    log.info("getUserWithPatronGroup:: parameters userId: {}", userId);
     return FetchSingleRecord.<User>forRecord("user")
       .using(usersStorageClient)
       .mapTo(User::new)

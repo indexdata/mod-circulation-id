@@ -82,7 +82,7 @@ public class UpdateRequestQueue {
 
   public CompletableFuture<Result<RequestQueue>> onCheckIn(
     RequestQueue requestQueue, Item item, String checkInServicePointId) {
-
+    log.info("onCheckIn:: checkInServicePointId: {}",checkInServicePointId);
     return requestQueueService.findRequestFulfillableByItem(item, requestQueue)
       .thenCompose(r -> r.after(request -> updateOutstandingRequestOnCheckIn(
         request, requestQueue, item, checkInServicePointId)));
@@ -94,10 +94,14 @@ public class UpdateRequestQueue {
     log.info("updateOutstandingRequestOnCheckIn :: checkInServicePointId:{} ",checkInServicePointId);
 
     if (requestBeingFulfilled == null) {
+      log.info("updateOutstandingRequestOnCheckIn :: requestBeingFulfilled is null ");
       return ofAsync(requestQueue);
     }
 
     if (requestBeingFulfilled.getItemId() == null || !requestBeingFulfilled.isFor(item)) {
+      log.info("updateOutstandingRequestOnCheckIn:: requestBeingFulfilled.getItemId() : {}", requestBeingFulfilled.getItemId()==null);
+      log.info("updateOutstandingRequestOnCheckIn:: !requestBeingFulfilled.isFor(item) : {}", !requestBeingFulfilled.isFor(item));
+      log.info("updateOutstandingRequestOnCheckIn :: requestBeingFulfilled.getItemId() == null || !requestBeingFulfilled.isFor(item) ");
       requestBeingFulfilled = requestBeingFulfilled.withItem(item);
 
       // Replacing request in the queue because another instance of it has been created

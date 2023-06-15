@@ -3,10 +3,13 @@ package org.folio.circulation.resources;
 import static java.util.concurrent.CompletableFuture.completedFuture;
 import static org.folio.circulation.support.results.Result.succeeded;
 
+import java.lang.invoke.MethodHandles;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.folio.circulation.domain.CheckInContext;
 import org.folio.circulation.domain.Item;
 import org.folio.circulation.domain.Loan;
@@ -45,6 +48,9 @@ import org.folio.circulation.support.http.server.WebContext;
 import org.folio.circulation.support.results.Result;
 
 class CheckInProcessAdapter {
+  private static final Logger log = LogManager.getLogger(
+    MethodHandles.lookup().lookupClass());
+
   private final ItemByBarcodeInStorageFinder itemFinder;
   private final SingleOpenLoanForItemInStorageFinder singleOpenLoanFinder;
   private final LoanCheckInService loanCheckInService;
@@ -159,12 +165,15 @@ class CheckInProcessAdapter {
   }
 
   CompletableFuture<Result<RequestQueue>> getRequestQueue(CheckInContext context) {
+    log.info("getRequestQueue:: getting request queue");
     boolean tlrEnabled = context.getTlrSettings().isTitleLevelRequestsFeatureEnabled();
-
+    log.info("getRequestQueue:: tlrEnabled: {}",tlrEnabled);
     if (!tlrEnabled) {
+      log.info("getRequestQueue:: tlr disabled");
       return requestQueueRepository.getByItemId(context.getItem().getItemId());
     }
     else {
+      log.info("getRequestQueue:: tlrEnabled");
       return requestQueueRepository.getByInstanceId(context.getItem().getInstanceId());
     }
   }
@@ -177,10 +186,14 @@ class CheckInProcessAdapter {
 
   CompletableFuture<Result<RequestQueue>> updateRequestQueue(
     CheckInContext context) {
+    log.info("updateRequestQueue:: context: {}",context);
 
     final RequestQueue requestQueue = context.getRequestQueue();
     final Item item = context.getItem();
     final String checkInServicePointId = context.getCheckInServicePointId().toString();
+    log.info("updateRequestQueue:: requestQueue: {}",requestQueue);
+    log.info("updateRequestQueue:: item: {}",item.toString());
+    log.info("updateRequestQueue:: checkInServicePointId: {}",checkInServicePointId);
 
     return requestQueueUpdate.onCheckIn(requestQueue, item, checkInServicePointId);
   }

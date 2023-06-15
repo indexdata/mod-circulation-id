@@ -4,12 +4,15 @@ import static org.apache.commons.lang3.BooleanUtils.isTrue;
 import static org.folio.circulation.support.results.Result.emptyAsync;
 import static org.folio.circulation.support.results.Result.ofAsync;
 
+import java.lang.invoke.MethodHandles;
 import java.util.Iterator;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Function;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.folio.circulation.domain.Item;
 import org.folio.circulation.domain.Request;
 import org.folio.circulation.domain.RequestQueue;
@@ -24,7 +27,8 @@ import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
 public class RequestQueueService {
-
+  private static final Logger log = LogManager.getLogger(
+    MethodHandles.lookup().lookupClass());
   private final RequestPolicyRepository requestPolicyRepository;
   private final LoanPolicyRepository loanPolicyRepository;
 
@@ -37,6 +41,7 @@ public class RequestQueueService {
 
   public CompletableFuture<Result<Request>> findRequestFulfillableByItem(Item item,
     RequestQueue requestQueue) {
+    log.info("findRequestFulfillableByItem:: requestQueue: {}",requestQueue);
 
     return findRequestFulfillableByItem(item, requestQueue.fulfillableRequests().iterator());
   }

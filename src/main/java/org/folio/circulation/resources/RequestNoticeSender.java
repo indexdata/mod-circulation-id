@@ -155,6 +155,7 @@ public class RequestNoticeSender {
       log.warn("Request Awaiting Pickup notice processing is aborted: request queue is null");
     }
     else if (item.isAwaitingPickup()) {
+      log.info("sendNoticeOnRequestAwaitingPickup:: item.isAwaitingPickup() : {}", item.isAwaitingPickup());
       requestQueue.getRequests().stream()
         .filter(Request::hasTopPriority)
         .filter(Request::isAwaitingPickup)
@@ -243,7 +244,7 @@ public class RequestNoticeSender {
 
   private CompletableFuture<Result<Void>> fetchDataAndSendRequestAwaitingPickupNotice(
     Request request) {
-
+    log.info("fetchDataAndSendRequestAwaitingPickupNotice:: request : {}", request);
     return ofAsync(() -> request)
       .thenCompose(r -> r.combineAfter(this::fetchServicePoint, Request::withPickupServicePoint))
       .thenCompose(r -> r.combineAfter(this::fetchRequester, Request::withRequester))
@@ -254,7 +255,7 @@ public class RequestNoticeSender {
 
   private CompletableFuture<Result<User>> fetchRequester(Request request) {
     String requesterId = request.getRequesterId();
-
+    log.info("fetchRequester:: requestor : {}", request.getRequester().toString());
     return userRepository.getUserWithPatronGroup(requesterId)
       .thenApply(r -> r.failWhen(this::isNull,
         user -> new RecordNotFoundFailure("user", requesterId)));
@@ -262,7 +263,7 @@ public class RequestNoticeSender {
 
   private CompletableFuture<Result<ServicePoint>> fetchServicePoint(Request request) {
     String pickupServicePointId = request.getPickupServicePointId();
-
+    log.info("fetchServicePoint:: pickupServicePointId {}, item : {}",pickupServicePointId,request.getItem().toString());
     return servicePointRepository.getServicePointById(pickupServicePointId)
       .thenApply(r -> r.failWhen(this::isNull,
         sp -> new RecordNotFoundFailure("servicePoint", pickupServicePointId)));

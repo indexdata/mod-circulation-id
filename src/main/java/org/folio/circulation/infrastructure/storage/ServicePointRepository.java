@@ -50,6 +50,7 @@ public class ServicePointRepository {
 
   public CompletableFuture<Result<ServicePoint>> getServicePointById(String id) {
     log.debug("getServicePointById:: parameters id: {}", id);
+    log.info("getServicePointById:: id : {}",id);
     if(id == null) {
       log.info("getServicePointById:: id is null");
       return ofAsync(() -> null);

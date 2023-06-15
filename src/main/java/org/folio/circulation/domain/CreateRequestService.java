@@ -108,17 +108,22 @@ public class CreateRequestService {
 
   private Result<RequestAndRelatedRecords> refuseHoldOrRecallTlrWhenPageableItemExists(
     RequestAndRelatedRecords requestAndRelatedRecords) {
-
+    log.info("refuseHoldOrRecallTlrWhenPageableItemExists:: requestAndRelatedRecords : {}",requestAndRelatedRecords);
     Request request = requestAndRelatedRecords.getRequest();
+    log.info("refuseHoldOrRecallTlrWhenPageableItemExists:: request : {}, request Type value : {}",request,request.getRequestType().getValue());
     if (request.isTitleLevel() && (request.isHold() || request.isRecall())) {
+      log.info("refuseHoldOrRecallTlrWhenPageableItemExists:: request.isTitleLevel() && (request.isHold() || request.isRecall())");
       List<Item> availablePageableItems = ItemForTlrService.using(repositories)
         .findAvailablePageableItems(requestAndRelatedRecords.getRequest());
-
+      log.info("refuseHoldOrRecallTlrWhenPageableItemExists:: availablePageableItems count : {}",availablePageableItems.size());
+      for (int i = 0; i < availablePageableItems.size(); i++) {
+        log.info("refuseHoldOrRecallTlrWhenPageableItemExists:: item : {}",availablePageableItems.get(i).toString());
+      }
       return failValidationWhenPageableItemsExist(requestAndRelatedRecords, availablePageableItems)
         .mapFailure(err -> errorHandler.handleValidationError(err,
           ATTEMPT_HOLD_OR_RECALL_TLR_FOR_AVAILABLE_ITEM, requestAndRelatedRecords));
     }
-
+    log.info("refuseHoldOrRecallTlrWhenPageableItemExists:: end requestAndRelatedRecords : {}",requestAndRelatedRecords);
     return of(() -> requestAndRelatedRecords);
   }
 
