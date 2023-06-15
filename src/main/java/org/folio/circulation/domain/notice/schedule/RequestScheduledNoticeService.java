@@ -90,6 +90,7 @@ public class RequestScheduledNoticeService {
   }
 
   public Result<CheckInContext> rescheduleRequestNotices(CheckInContext context) {
+    log.info("rescheduleRequestNotices:: context",context.toString());
     Optional.ofNullable(context.getHighestPriorityFulfillableRequest())
       .ifPresent(this::rescheduleRequestNotices);
 

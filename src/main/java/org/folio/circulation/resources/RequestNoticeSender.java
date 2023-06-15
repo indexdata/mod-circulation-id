@@ -147,11 +147,14 @@ public class RequestNoticeSender {
   public Result<CheckInContext> sendNoticeOnRequestAwaitingPickup(CheckInContext context) {
     final Item item = context.getItem();
     final RequestQueue requestQueue = context.getRequestQueue();
-
+    log.info("sendNoticeOnRequestAwaitingPickup:: context : {} item : {}, requestQueue size() :{}", context, context.getItem().toString(), requestQueue.size());
+    requestQueue.getRequests().stream().forEach(i->log.info("sendNoticeOnRequestAwaitingPickup:: request queue : {}",i.toString()));
     if (item == null || item.isNotFound()) {
+      log.info("Request Awaiting Pickup notice processing is aborted: item is missing");
       log.warn("Request Awaiting Pickup notice processing is aborted: item is missing");
     }
     else if (requestQueue == null) {
+      log.info("Request Awaiting Pickup notice processing is aborted: item is missing");
       log.warn("Request Awaiting Pickup notice processing is aborted: request queue is null");
     }
     else if (item.isAwaitingPickup()) {
