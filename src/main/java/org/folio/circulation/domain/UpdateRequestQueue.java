@@ -268,6 +268,7 @@ public class UpdateRequestQueue {
     final Request request = requestAndRelatedRecords.getRequest();
     final RequestQueue requestQueue = requestAndRelatedRecords.getRequestQueue();
     requestQueue.add(request);
+    log.info("onCreate:: requestAndRelatedRecords request : {} request queue : {} ", requestAndRelatedRecords.getRequest(), requestAndRelatedRecords.getRequestQueue());
     return requestQueueRepository.updateRequestsWithChangedPositions(requestQueue)
         .thenApply(r -> r.map(requestAndRelatedRecords::withRequestQueue));
   }

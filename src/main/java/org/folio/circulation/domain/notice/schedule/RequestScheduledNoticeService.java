@@ -30,6 +30,8 @@ import org.folio.circulation.support.Clients;
 import org.folio.circulation.support.results.Result;
 
 public class RequestScheduledNoticeService {
+  private static final Logger log = LogManager.getLogger(MethodHandles.lookup().lookupClass());
+
   public static RequestScheduledNoticeService using(Clients clients) {
     return new RequestScheduledNoticeService(
       ScheduledNoticesRepository.using(clients),
@@ -38,7 +40,6 @@ public class RequestScheduledNoticeService {
 
   private final ScheduledNoticesRepository scheduledNoticesRepository;
   private final PatronNoticePolicyRepository noticePolicyRepository;
-  private final Logger log = LogManager.getLogger(MethodHandles.lookup().lookupClass());
 
   private RequestScheduledNoticeService(
     ScheduledNoticesRepository scheduledNoticesRepository,
@@ -49,17 +50,23 @@ public class RequestScheduledNoticeService {
 
 
   public Result<RequestAndRelatedRecords> scheduleRequestNotices(RequestAndRelatedRecords relatedRecords) {
+
+    log.info("scheduleRequestNotices:: scheduling notices records : {}", relatedRecords);
     Request request = relatedRecords.getRequest();
+    log.info("scheduleRequestNotices:: request id: {}, request status: {}", relatedRecords.getRequest().getId(), relatedRecords.getRequest().getStatus().getValue());
     if (request.isClosed()) {
+      log.info("scheduleRequestNotices:: request.isClosed()");
       return succeeded(relatedRecords);
     }
 
     if (request.hasItemId()) {
+      log.info("scheduleRequestNotices:: request.hasItemId()");
       scheduleNoticesForRequestWithItemId(request);
     } else {
+      log.info("scheduleRequestNotices:: request.hasNoItemId()");
       scheduleNoticesForRequestWithoutItemId(request);
     }
-
+    log.info("scheduleRequestNotices:: succeeded");
     return succeeded(relatedRecords);
   }
 
@@ -96,7 +103,7 @@ public class RequestScheduledNoticeService {
 
   private Result<PatronNoticePolicy> scheduleRequestNoticesBasedOnPolicy(
     Request request, PatronNoticePolicy noticePolicy) {
-
+    log.info("scheduleRequestNoticesBasedOnPolicy:: scheduleRequestNoticesBasedOnPolicy");
     noticePolicy.getNoticeConfigurations()
       .stream()
       .map(cfg -> createRequestScheduledNoticeBasedOnNoticeConfig(cfg, request))
@@ -110,12 +117,16 @@ public class RequestScheduledNoticeService {
   private Optional<ScheduledNotice> createRequestScheduledNoticeBasedOnNoticeConfig(
     NoticeConfiguration cfg, Request request) {
     NoticeEventType eventType = cfg.getNoticeEventType();
-
+    log.info("createRequestScheduledNoticeBasedOnNoticeConfig");
     if (eventType == NoticeEventType.REQUEST_EXPIRATION) {
+      log.info("createRequestScheduledNoticeBasedOnNoticeConfig:: REQUEST_EXPIRATION");
       return createRequestExpirationScheduledNotice(request, cfg, REQUEST_EXPIRATION);
     } else if (eventType == NoticeEventType.HOLD_EXPIRATION) {
+      log.info("createRequestScheduledNoticeBasedOnNoticeConfig:: HOLD_EXPIRATION");
+
       return createHoldExpirationScheduledNotice(request, cfg);
     } else {
+      log.info("createRequestScheduledNoticeBasedOnNoticeConfig:: empty");
       return Optional.empty();
     }
   }
@@ -167,7 +178,9 @@ public class RequestScheduledNoticeService {
   }
 
   private Result<Request> scheduleNoticesForRequestWithItemId(Request request) {
+    log.info("scheduleNoticesForRequestWithItemId:: item id : {}", request.getItemId());
     if (!request.isClosed()) {
+      log.info("scheduleNoticesForRequestWithItemId:: request is not closed");
       noticePolicyRepository.lookupPolicy(request)
         .thenApply(r -> r.next(policy -> scheduleRequestNoticesBasedOnPolicy(request, policy)));
     }
@@ -176,14 +189,18 @@ public class RequestScheduledNoticeService {
   }
 
   private Result<Request> scheduleNoticesForRequestWithoutItemId(Request request) {
+    log.info("scheduleNoticesForRequestWithoutItemId:: request.hasNoItemId()");
     if (request.isTitleLevel()) {
+      log.info("scheduleNoticesForRequestWithoutItemId:: request.isTitleLevel() : {}", request.isTitleLevel());
       scheduleRequestNoticesBasedOnTlrSettings(request);
     }
+    log.info("scheduleNoticesForRequestWithoutItemId:: succeeded");
 
     return succeeded(request);
   }
 
   private Result<TlrSettingsConfiguration> scheduleRequestNoticesBasedOnTlrSettings(Request request) {
+    log.info("scheduleRequestNoticesBasedOnTlrSettings:: request value : {}", request.getRequestType().getValue());
     TlrSettingsConfiguration tlrSettingsConfiguration = request.getTlrSettingsConfiguration();
     UUID expirationTemplateId = tlrSettingsConfiguration.getExpirationPatronNoticeTemplateId();
     if (expirationTemplateId != null) {
@@ -195,13 +212,13 @@ public class RequestScheduledNoticeService {
         .setRecurring(false)
         .setSendInRealTime(true)
         .build();
-
+      log.info("scheduleRequestNoticesBasedOnTlrSettings::  expirationTemplateId is not null");
       createRequestExpirationScheduledNotice(request, noticeConfiguration, TITLE_LEVEL_REQUEST_EXPIRATION)
         .map(scheduledNoticesRepository::create);
     } else {
       log.info("ExpirationPatronNoticeTemplateId is not present, scheduled notice will not be created");
     }
-
+    log.info("scheduleRequestNoticesBasedOnTlrSettings::  succeeded");
     return succeeded(tlrSettingsConfiguration);
   }
 }

@@ -23,6 +23,7 @@ public class RequestRepresentation {
 
   private static final String PICKUP_SERVICE_POINT = "pickupServicePoint";
 
+
   public JsonObject extendedRepresentation(Request request) {
     final JsonObject requestRepresentation = request.asJson();
 
@@ -35,7 +36,7 @@ public class RequestRepresentation {
     addDeliveryAddress(requestRepresentation, request, request.getRequester());
 
     removeSearchIndexFields(requestRepresentation);
-
+    log.info("extendedRepresentation:: requestRepresentation : {}", requestRepresentation.encodePrettily());
     return requestRepresentation;
   }
 

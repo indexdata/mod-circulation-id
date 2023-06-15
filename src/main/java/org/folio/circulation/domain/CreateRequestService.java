@@ -71,7 +71,7 @@ public class CreateRequestService {
 
   public CompletableFuture<Result<RequestAndRelatedRecords>> createRequest(
     RequestAndRelatedRecords requestAndRelatedRecords) {
-
+    log.info("createRequest:: creating request");
     final var requestRepository = repositories.getRequestRepository();
     final var configurationRepository = repositories.getConfigurationRepository();
     final var automatedBlocksValidator = requestBlockValidators.getAutomatedPatronBlocksValidator();

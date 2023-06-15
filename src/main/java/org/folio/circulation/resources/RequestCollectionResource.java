@@ -8,6 +8,9 @@ import static org.folio.circulation.support.results.AsynchronousResult.fromFutur
 import static org.folio.circulation.support.results.MappingFunctions.toFixedValue;
 import static org.folio.circulation.support.results.MappingFunctions.when;
 
+import java.lang.invoke.MethodHandles;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.folio.circulation.domain.CreateRequestService;
 import org.folio.circulation.domain.MoveRequestProcessAdapter;
 import org.folio.circulation.domain.MoveRequestService;
@@ -56,6 +59,9 @@ import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
 
 public class RequestCollectionResource extends CollectionResource {
+  private static final Logger log = LogManager.getLogger(
+    MethodHandles.lookup().lookupClass());
+
   public RequestCollectionResource(HttpClient client) {
     super(client, "/circulation/requests");
   }
@@ -100,7 +106,7 @@ public class RequestCollectionResource extends CollectionResource {
     final var createRequestService = new CreateRequestService(repositories, updateUponRequest,
       requestLoanValidator, requestNoticeSender, requestBlocksValidators, eventPublisher,
       errorHandler);
-
+    log.info("create:: createRequestService");
     final var requestFromRepresentationService = new RequestFromRepresentationService(
       Request.Operation.CREATE, repositories,
       createProxyRelationshipValidator(representation, clients),

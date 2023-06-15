@@ -356,7 +356,9 @@ public class EventPublisher {
     JsonObject eventJson = new JsonObject();
     write(eventJson, LOG_EVENT_TYPE.value(), payloadType.value());
     write(eventJson, PAYLOAD.value(), context);
-
+    logger.info("publishLogRecord:: context : {}", context);
+    logger.info("publishLogRecord:: LogEventType payloadType.value() : {}", payloadType.value());
+    logger.info("publishLogRecord:: eventJson : {}", eventJson.encode());
     return pubSubPublishingService.publishEvent(LOG_RECORD.name(), eventJson.encode())
       .handle((result, error) -> handlePublishEventError(error, null));
   }

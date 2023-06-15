@@ -10,12 +10,15 @@ import static org.folio.circulation.support.results.Result.of;
 import static org.folio.circulation.support.results.Result.ofAsync;
 import static org.folio.circulation.support.results.Result.succeeded;
 
+import java.lang.invoke.MethodHandles;
 import java.time.ZonedDateTime;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Function;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.folio.circulation.infrastructure.storage.inventory.ItemRepository;
 import org.folio.circulation.services.RequestQueueService;
 import org.folio.circulation.support.results.Result;
@@ -26,6 +29,7 @@ import lombok.AllArgsConstructor;
 public class UpdateItem {
   private final ItemRepository itemRepository;
   private final RequestQueueService requestQueueService;
+  private static final Logger log = LogManager.getLogger(MethodHandles.lookup().lookupClass());
 
   public CompletableFuture<Result<Item>> onCheckIn(Item item, Request request,
     UUID checkInServicePointId, String loggedInUserId, ZonedDateTime dateTime) {
@@ -137,7 +141,7 @@ public class UpdateItem {
 
   CompletableFuture<Result<RequestAndRelatedRecords>> onRequestCreateOrUpdate(
     RequestAndRelatedRecords requestAndRelatedRecords) {
-
+    log.info("onRequestCreateOrUpdate:: requestAndRelatedRecords  getRequest: {}, item status value: {}, awaiting pickup : {}", requestAndRelatedRecords.getRequest(), requestAndRelatedRecords.getRequest().getItem().getStatus().getValue(), requestAndRelatedRecords.getRequest().getItem().isAwaitingPickup());
     return of(() -> itemStatusOnRequestCreateOrUpdate(requestAndRelatedRecords))
       .after(prospectiveStatus -> updateItemWhenNotSameStatus(prospectiveStatus,
           requestAndRelatedRecords.getRequest().getItem()))

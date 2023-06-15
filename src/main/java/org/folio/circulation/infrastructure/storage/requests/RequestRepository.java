@@ -235,6 +235,7 @@ public class RequestRepository {
 
   public CompletableFuture<Result<RequestAndRelatedRecords>> create(
     RequestAndRelatedRecords requestAndRelatedRecords) {
+    log.info("create:: parameters requestAndRelatedRecords: {}", requestAndRelatedRecords);
 
     log.debug("create:: parameters requestAndRelatedRecords: {}", requestAndRelatedRecords);
 
@@ -242,7 +243,7 @@ public class RequestRepository {
 
     JsonObject representation = new StoredRequestRepresentation()
       .storedRequest(request);
-
+    log.info("create:: representation: {}", representation.encodePrettily());
     final ResponseInterpreter<Request> interpreter = new ResponseInterpreter<Request>()
       .flatMapOn(201, mapUsingJson(request::withRequestRepresentation))
       .otherwise(forwardOnFailure());

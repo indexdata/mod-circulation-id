@@ -25,6 +25,7 @@ import static org.folio.circulation.support.logging.PatronNoticeLogHelper.logRes
 import static org.folio.circulation.support.results.ResultBinding.flatMapResult;
 import static org.folio.circulation.support.utils.DateFormatUtil.formatDateTime;
 
+import java.lang.invoke.MethodHandles;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.Arrays;
@@ -33,6 +34,8 @@ import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.folio.circulation.domain.MultipleRecords;
 import org.folio.circulation.domain.notice.schedule.ScheduledNotice;
 import org.folio.circulation.domain.notice.schedule.TriggeringEvent;
@@ -48,6 +51,9 @@ import org.folio.circulation.support.results.Result;
 import io.vertx.core.json.JsonObject;
 
 public class ScheduledNoticesRepository {
+  private static final Logger log = LogManager.getLogger(
+    MethodHandles.lookup().lookupClass());
+
   private static final List<String> UPON_AT_AND_AFTER_TIMING =
     Arrays.asList(UPON_AT.getRepresentation(), AFTER.getRepresentation());
 
@@ -65,11 +71,11 @@ public class ScheduledNoticesRepository {
 
   public CompletableFuture<Result<ScheduledNotice>> create(ScheduledNotice scheduledNotice) {
     JsonObject representation = mapToJson(scheduledNotice);
-
+    log.info("create:: schedule Notice");
     final ResponseInterpreter<ScheduledNotice> interpreter
       = new ResponseInterpreter<ScheduledNotice>()
       .flatMapOn(201, flatMapUsingJson(JsonScheduledNoticeMapper::mapFromJson));
-
+    log.info("create:: schedule Notice representation : {}", representation.encodePrettily());
     return scheduledNoticesStorageClient.post(representation)
       .whenComplete((r, t) -> logResponse(r, t, HTTP_CREATED.toInt(), POST, scheduledNotice))
       .thenApply(interpreter::flatMap);
