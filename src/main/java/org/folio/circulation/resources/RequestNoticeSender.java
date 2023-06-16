@@ -160,6 +160,7 @@ public class RequestNoticeSender {
     else if (item.isAwaitingPickup()) {
       log.info("sendNoticeOnRequestAwaitingPickup:: item.isAwaitingPickup() : {}", item.isAwaitingPickup());
       requestQueue.getRequests().stream()
+        .filter(Request::hasTopPriority)
         .filter(Request::isAwaitingPickup)
         .filter(Request::hasChangedStatus)
         .findFirst()
