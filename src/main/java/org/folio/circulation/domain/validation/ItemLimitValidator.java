@@ -109,6 +109,7 @@ public class ItemLimitValidator {
     Item item = records.getLoan().getItem();
     String loanTypeId = item.getLoanTypeId();
     Integer itemLimit = records.getLoan().getLoanPolicy().getItemLimit();
+    log.info("item limit {} , item {} ", itemLimit, item.getBarcode());
     AppliedRuleConditions ruleConditions = records.getLoan().getLoanPolicy().getRuleConditions();
 
     return loanRepository.findOpenLoansByUserIdWithItem(LOANS_PAGE_LIMIT, records)
@@ -119,7 +120,10 @@ public class ItemLimitValidator {
         .filter(loanRecord -> isLoanTypeMatchInRetrievedLoan(
           loanTypeId, loanRecord, ruleConditions))
         .count()))
-      .thenApply(r -> r.map(loansCount -> loansCount >= itemLimit));
+      .thenApply(r -> r.map(loansCount -> {
+        log.info("loansCount {} , itemLimit {} ", loansCount, itemLimit);
+        return loansCount >= itemLimit;
+      }));
   }
 
   private boolean isMaterialTypeMatchInRetrievedLoan(String expectedMaterialTypeId,
